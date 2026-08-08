@@ -12,7 +12,7 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate",
-    "vercel-build": "npx prisma generate && npx prisma migrate deploy && npm run build --prefix client"
+    "vercel-build": "npx prisma generate && npx prisma migrate deploy && npm run build --prefix server && npm run build --prefix client && node scripts/copy-client-to-public.js"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

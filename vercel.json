@@ -1,15 +1,14 @@
 {
   "installCommand": "npm install && npm install --prefix server && npm install --prefix client",
-  "buildCommand": "npx prisma generate && npx prisma migrate deploy && npm run build --prefix client",
-  "outputDirectory": "client/dist",
+  "buildCommand": "npm run vercel-build",
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {
-    "api/[...path].ts": {
+    "api/[...path].js": {
       "maxDuration": 60,
       "memory": 1024,
-      "includeFiles": "{prisma/**,node_modules/.prisma/**,node_modules/@prisma/client/**,server/src/**}"
+      "includeFiles": "{prisma/**,node_modules/.prisma/**,node_modules/@prisma/client/**,server/dist/**}"
     }
   }
 }
