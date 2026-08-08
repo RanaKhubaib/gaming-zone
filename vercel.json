@@ -2,14 +2,15 @@
   "installCommand": "npm install && npm install --prefix server && npm install --prefix client",
   "buildCommand": "npm run vercel-build",
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {
+    "api/index.js": {
+      "maxDuration": 60
+    },
     "api/health.js": {
       "maxDuration": 10
-    },
-    "api/[...path].js": {
-      "maxDuration": 60
     },
     "api/ping.js": {
       "maxDuration": 10
