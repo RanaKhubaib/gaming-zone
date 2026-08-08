@@ -3,34 +3,38 @@ const path = require("path");
 const fs = require("fs");
 
 const serverRoot = path.join(__dirname, "..", "server");
+const srcDir = path.join(serverRoot, "src");
 const distDir = path.join(serverRoot, "dist");
+
+function listTsFiles(dir) {
+  const out = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...listTsFiles(full));
+    else if (entry.name.endsWith(".ts")) out.push(full);
+  }
+  return out;
+}
 
 fs.rmSync(distDir, { recursive: true, force: true });
 fs.mkdirSync(distDir, { recursive: true });
 
-// Bundle the Express app for Vercel (no typecheck — avoids Prisma type issues on CI)
+const entryPoints = listTsFiles(srcDir);
+if (entryPoints.length === 0) {
+  console.error("No TypeScript files found in server/src");
+  process.exit(1);
+}
+
+// Transpile only (no bundle) so @prisma/client resolves from node_modules at runtime
 esbuild.buildSync({
-  entryPoints: [path.join(serverRoot, "src", "app.ts")],
-  bundle: true,
+  entryPoints,
+  outdir: distDir,
+  outbase: srcDir,
   platform: "node",
   target: "node18",
   format: "cjs",
-  outfile: path.join(distDir, "app.js"),
-  // Keep Prisma external so the query engine files load from node_modules
-  external: ["@prisma/client", ".prisma/client"],
+  bundle: false,
   logLevel: "info",
 });
 
-// Local server entry (optional; used by npm start)
-esbuild.buildSync({
-  entryPoints: [path.join(serverRoot, "src", "index.ts")],
-  bundle: true,
-  platform: "node",
-  target: "node18",
-  format: "cjs",
-  outfile: path.join(distDir, "index.js"),
-  external: ["@prisma/client", ".prisma/client"],
-  logLevel: "info",
-});
-
-console.log("server dist built with esbuild");
+console.log(`server dist built (${entryPoints.length} files, unbundled)`);
