@@ -1,38 +1,52 @@
+const serverless = require("serverless-http");
+
+let cached;
+let cachedError;
+
+/**
+ * Catch-all for /api/* (except /api/health and /api/ping).
+ */
 module.exports = async function handler(req, res) {
-  const steps = [];
   try {
-    steps.push("start");
-    require("@prisma/client");
-    steps.push("prisma-client");
-    require("express");
-    steps.push("express");
-    require("serverless-http");
-    steps.push("serverless-http");
-    require("jose");
-    steps.push("jose");
-    require("bcryptjs");
-    steps.push("bcryptjs");
-    require("date-fns");
-    steps.push("date-fns");
-    require("@neondatabase/serverless");
-    steps.push("neon");
-    require("@prisma/adapter-neon");
-    steps.push("adapter-neon");
-    require("ws");
-    steps.push("ws");
-    require("../server/dist/lib/auth-constants");
-    steps.push("auth-constants");
-    require("../server/dist/lib/config");
-    steps.push("config");
-    require("../server/dist/lib/prisma");
-    steps.push("prisma-module");
-    require("../server/dist/app");
-    steps.push("app");
-    res.status(200).json({ ok: true, steps });
+    if (!process.env.DATABASE_URL) {
+      res.status(500).json({
+        error:
+          "DATABASE_URL is missing. Import your .env in Vercel (DATABASE_URL, DIRECT_URL, AUTH_SECRET) and redeploy.",
+      });
+      return;
+    }
+    if (!process.env.AUTH_SECRET || String(process.env.AUTH_SECRET).length < 16) {
+      res.status(500).json({
+        error:
+          "AUTH_SECRET is missing or shorter than 16 characters. Fix it in Vercel env vars and redeploy.",
+      });
+      return;
+    }
+
+    if (cachedError) {
+      res.status(500).json({ error: cachedError });
+      return;
+    }
+
+    if (!cached) {
+      try {
+        const appModule = require("../server/dist/app");
+        const app = appModule.default || appModule;
+        cached = serverless(app);
+      } catch (e) {
+        cachedError = e && e.message ? e.message : String(e);
+        console.error("[api] failed to load app", e);
+        res.status(500).json({ error: cachedError });
+        return;
+      }
+    }
+
+    return cached(req, res);
   } catch (e) {
-    res.status(500).json({
-      error: e && e.message ? e.message : String(e),
-      steps,
-    });
+    console.error("[api handler]", e);
+    const message = e && e.message ? e.message : String(e);
+    if (!res.headersSent) {
+      res.status(500).json({ error: message });
+    }
   }
 };
