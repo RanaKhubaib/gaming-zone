@@ -1,37 +1,33 @@
-import { PrismaClient } from "../../generated/client";
+import { PrismaClient } from "@prisma/client";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import { Pool, neonConfig } from "@neondatabase/serverless";
+import ws from "ws";
+
+neonConfig.webSocketConstructor = ws;
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-function databaseUrl() {
-  const base = process.env.DATABASE_URL;
-  if (!base) return undefined;
-  try {
-    const u = new URL(base);
-    if (!u.searchParams.has("pgbouncer")) u.searchParams.set("pgbouncer", "true");
-    if (!u.searchParams.has("connect_timeout")) {
-      u.searchParams.set("connect_timeout", "10");
-    }
-    if (!u.searchParams.has("connection_limit")) {
-      u.searchParams.set("connection_limit", "1");
-    }
-    return u.toString();
-  } catch {
-    return base;
+function createPrisma() {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    // Constructing without a URL still allows import; queries will fail clearly.
+    return new PrismaClient({
+      log:
+        process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+    });
   }
-}
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    datasources: {
-      db: {
-        url: databaseUrl(),
-      },
-    },
+  const pool = new Pool({ connectionString });
+  const adapter = new PrismaNeon(pool);
+  return new PrismaClient({
+    adapter,
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
+}
+
+export const prisma = globalForPrisma.prisma ?? createPrisma();
 
 // Reuse across warm serverless invocations
 globalForPrisma.prisma = prisma;

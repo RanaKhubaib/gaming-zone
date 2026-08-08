@@ -23,12 +23,18 @@ if (!process.env.DATABASE_URL) {
 
 run("npx prisma generate", root);
 
-const generated = path.join(server, "generated", "client");
-if (!fs.existsSync(path.join(generated, "index.js"))) {
-  console.error("ERROR: Prisma client was not generated at server/generated/client");
+const generated = path.join(
+  root,
+  "node_modules",
+  ".prisma",
+  "client",
+  "index.js"
+);
+if (!fs.existsSync(generated)) {
+  console.error("ERROR: Prisma client was not generated (.prisma/client missing)");
   process.exit(1);
 }
-console.log("Prisma client OK at server/generated/client");
+console.log("Prisma client OK");
 
 run("npx prisma migrate deploy", root);
 run("node ../scripts/build-server.js", server);

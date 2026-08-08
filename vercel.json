@@ -9,8 +9,10 @@
       "maxDuration": 10
     },
     "api/[...path].js": {
-      "maxDuration": 60,
-      "includeFiles": "server/generated/client/**"
+      "maxDuration": 60
+    },
+    "api/ping.js": {
+      "maxDuration": 10
     }
   }
 }
