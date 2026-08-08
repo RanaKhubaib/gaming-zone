@@ -3,14 +3,13 @@
   "buildCommand": "npx prisma generate && npx prisma migrate deploy && npm run build --prefix client",
   "outputDirectory": "client/dist",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {
-    "api/index.ts": {
-      "maxDuration": 30,
+    "api/[...path].ts": {
+      "maxDuration": 60,
       "memory": 1024,
-      "includeFiles": "prisma/**"
+      "includeFiles": "{prisma/**,node_modules/.prisma/**,node_modules/@prisma/client/**,server/src/**}"
     }
   }
 }

@@ -26,9 +26,37 @@ export function createApp() {
   app.use(express.json({ limit: "3mb" }));
   app.use(cookieParser());
 
+  // Vercel catch-all may pass path without the /api prefix
+  if (process.env.VERCEL) {
+    app.use((req, _res, next) => {
+      const url = req.url || "/";
+      if (!url.startsWith("/api")) {
+        req.url = "/api" + (url.startsWith("/") ? url : `/${url}`);
+      }
+      next();
+    });
+  }
+
   app.get("/api/health", (_req, res) => res.json({ ok: true }));
   app.use("/api", api);
 
+  app.use(
+    (
+      err: unknown,
+      _req: express.Request,
+      res: express.Response,
+      _next: express.NextFunction
+    ) => {
+      console.error("[api error]", err);
+      const message =
+        err instanceof Error ? err.message : "Internal server error";
+      if (!res.headersSent) {
+        res.status(500).json({ error: message });
+      }
+    }
+  );
+
+  // On Vercel the static UI is served separately (client/dist).
   const clientDist = path.resolve(__dirname, "../../client/dist");
   if (isProd && fs.existsSync(clientDist) && !process.env.VERCEL) {
     app.use(express.static(clientDist));

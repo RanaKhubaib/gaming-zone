@@ -56,8 +56,24 @@ export default function App() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-6 text-red-700">
-        {error}. Is the API running on port 4000?
+      <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-3 p-6 text-center">
+        <p className="text-lg font-semibold text-red-700">{error}</p>
+        <p className="text-sm text-slate-600">
+          On Vercel, check Environment Variables:{" "}
+          <code className="rounded bg-slate-200 px-1">DATABASE_URL</code>,{" "}
+          <code className="rounded bg-slate-200 px-1">DIRECT_URL</code>,{" "}
+          <code className="rounded bg-slate-200 px-1">AUTH_SECRET</code>.
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            setError(null);
+            reload();
+          }}
+          className="rounded-xl bg-[var(--accent,#0f766e)] px-4 py-2 text-sm font-bold text-white"
+        >
+          Retry
+        </button>
       </div>
     );
   }

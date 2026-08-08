@@ -41,15 +41,22 @@ function sendResult(res: import("express").Response, result: { error?: string; [
 }
 
 api.get("/bootstrap", async (req, res) => {
-  const settings = await getAppSettings();
-  const user = await getCurrentUser(req);
-  res.json({
-    settings,
-    cssVars: settingsToCssVars(settings),
-    user: user
-      ? { id: user.id, username: user.username, displayName: user.displayName }
-      : null,
-  });
+  try {
+    const settings = await getAppSettings();
+    const user = await getCurrentUser(req);
+    res.json({
+      settings,
+      cssVars: settingsToCssVars(settings),
+      user: user
+        ? { id: user.id, username: user.username, displayName: user.displayName }
+        : null,
+    });
+  } catch (e) {
+    console.error("[bootstrap]", e);
+    res.status(500).json({
+      error: e instanceof Error ? e.message : "Bootstrap failed",
+    });
+  }
 });
 
 api.post("/auth/login", async (req, res) => {
