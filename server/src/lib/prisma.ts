@@ -3,7 +3,9 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import ws from "ws";
 
+// Vercel/serverless: prefer HTTP over WebSockets (avoids long WS connect hangs).
 neonConfig.webSocketConstructor = ws;
+neonConfig.poolQueryViaFetch = true;
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -12,7 +14,6 @@ const globalForPrisma = globalThis as unknown as {
 function createPrisma() {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
-    // Constructing without a URL still allows import; queries will fail clearly.
     return new PrismaClient({
       log:
         process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],

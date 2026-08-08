@@ -1,12 +1,16 @@
 const serverless = require("serverless-http");
 
 let cached;
+let cachedError;
 
 /**
  * Catch-all for /api/* (except /api/health and /api/ping which have their own files).
  */
 module.exports = async function handler(req, res) {
+  const started = Date.now();
   try {
+    console.log("[api]", req.method, req.url);
+
     if (!process.env.DATABASE_URL) {
       res.status(500).json({
         error:
@@ -22,10 +26,24 @@ module.exports = async function handler(req, res) {
       return;
     }
 
+    if (cachedError) {
+      res.status(500).json({ error: cachedError });
+      return;
+    }
+
     if (!cached) {
-      const appModule = require("../server/dist/app");
-      const app = appModule.default || appModule;
-      cached = serverless(app);
+      try {
+        console.log("[api] loading app…");
+        const appModule = require("../server/dist/app");
+        const app = appModule.default || appModule;
+        cached = serverless(app);
+        console.log("[api] app ready", Date.now() - started, "ms");
+      } catch (e) {
+        cachedError = e && e.message ? e.message : String(e);
+        console.error("[api] failed to load app", e);
+        res.status(500).json({ error: cachedError });
+        return;
+      }
     }
 
     return cached(req, res);
@@ -33,7 +51,7 @@ module.exports = async function handler(req, res) {
     console.error("[api handler]", e);
     const message = e && e.message ? e.message : String(e);
     if (!res.headersSent) {
-      res.status(500).json({ error: message });
+      res.status(500).json({ error: message, ms: Date.now() - started });
     }
   }
 };
