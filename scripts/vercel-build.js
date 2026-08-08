@@ -1,5 +1,6 @@
 const { execSync } = require("child_process");
 const path = require("path");
+const fs = require("fs");
 
 function run(cmd, cwd) {
   console.log(`\n> ${cmd}`);
@@ -15,17 +16,20 @@ const server = path.join(root, "server");
 
 if (!process.env.DATABASE_URL) {
   console.error(
-    "ERROR: DATABASE_URL is missing during build. Add it in Vercel → Settings → Environment Variables (Production), then redeploy."
+    "ERROR: DATABASE_URL is missing during build. Add it in Vercel env vars."
   );
   process.exit(1);
 }
 
 run("npx prisma generate", root);
-try {
-  run("npx prisma generate --schema=../prisma/schema.prisma", server);
-} catch (e) {
-  console.warn("server prisma generate skipped/failed (using root client)");
+
+const generated = path.join(server, "generated", "client");
+if (!fs.existsSync(path.join(generated, "index.js"))) {
+  console.error("ERROR: Prisma client was not generated at server/generated/client");
+  process.exit(1);
 }
+console.log("Prisma client OK at server/generated/client");
+
 run("npx prisma migrate deploy", root);
 run("node ../scripts/build-server.js", server);
 run("npm run build", path.join(root, "client"));

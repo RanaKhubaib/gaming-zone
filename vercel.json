@@ -10,8 +10,7 @@
     },
     "api/[...path].js": {
       "maxDuration": 60,
-      "memory": 1024,
-      "includeFiles": "{prisma/**,node_modules/.prisma/**,node_modules/@prisma/client/**,server/dist/**}"
+      "includeFiles": "server/generated/client/**"
     }
   }
 }

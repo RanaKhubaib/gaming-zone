@@ -11,6 +11,7 @@ server/node_modules
 # builds
 client/dist
 server/dist
+server/generated
 .next
 out
 build
@@ -28,3 +29,6 @@ next-env.d.ts
 public/uploads
 prisma/*.db
 prisma/*.db-journal
+
+.vercel
+.env*
