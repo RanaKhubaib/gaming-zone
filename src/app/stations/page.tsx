@@ -1,10 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import { StationsManager } from "@/components/StationsManager";
+import type { ConsoleType, StationStatus } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
 export default async function StationsPage() {
-  const stations = await prisma.station.findMany({ orderBy: { id: "asc" } });
+  const rows = await prisma.station.findMany({ orderBy: { id: "asc" } });
+  const stations = rows.map((s) => ({
+    ...s,
+    consoleType: s.consoleType as ConsoleType,
+    status: s.status as StationStatus,
+  }));
 
   return (
     <div className="space-y-6">

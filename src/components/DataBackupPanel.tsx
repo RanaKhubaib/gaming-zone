@@ -14,8 +14,12 @@ export function DataBackupPanel() {
     setMessage(null);
     startTransition(async () => {
       const result = await importSessionsCsvAction(formData);
-      if (result?.error) {
-        setError(result.error);
+      if (!result || !("imported" in result)) {
+        setError(
+          result && "error" in result && result.error
+            ? result.error
+            : "Import failed."
+        );
         return;
       }
       const parts = [

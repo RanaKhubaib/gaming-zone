@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { StationCard } from "@/components/StationCard";
 import { formatCurrency } from "@/lib/format";
 import { getAppSettings } from "@/lib/settings";
+import type { ConsoleType } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -90,7 +91,12 @@ export default async function DashboardPage() {
           {stations.map((station) => (
             <StationCard
               key={station.id}
-              station={station}
+              station={{
+                id: station.id,
+                name: station.name,
+                consoleType: station.consoleType as ConsoleType,
+                hourlyRate: station.hourlyRate,
+              }}
               activeTimer={timerByStation.get(station.id) ?? null}
               games={games}
             />
