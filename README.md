@@ -1,64 +1,40 @@
-# Gaming Zone Manager
+# Gaming Zone — Vite + React + Express
 
-Full-stack app for running a PlayStation / PC gaming café: stations, sessions, automatic duration & price, optional live Start/Stop timer, and reports.
+**Stack:** Vite · React · Express · Prisma · Neon PostgreSQL
 
-**Stack:** Next.js (App Router) · TypeScript · Tailwind CSS · Prisma · **PostgreSQL** (Neon / Prisma Postgres — Vercel-ready)
+## Local development
 
----
-
-## Requirements
-
-- [Node.js](https://nodejs.org) LTS (v18+)
-- A PostgreSQL database (Neon free tier, Prisma Postgres, or Supabase)
-
-## Install & run
-
-1. Copy `.env.example` to `.env` and set:
-   - `DATABASE_URL` — pooled connection string
-   - `DIRECT_URL` — direct connection string (same as DATABASE_URL is OK for Prisma Postgres)
-   - `AUTH_SECRET` — long random string
-2. Install and migrate:
+1. `.env` must have `DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET`
+2. Install:
 
 ```bash
 npm install
+npm install --prefix server
+npm install --prefix client
 npx prisma migrate deploy
 npx prisma db seed
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+- Web UI: http://localhost:5173  
+- API: http://localhost:4000  
 
-## Login
+Login: `admin` / `admin123`
 
-- Username: `admin`
-- Password: `admin123`  
-Change these under **Settings → Account**.
+## Production (recommended: Railway / Render)
 
-## Pricing (Settings → Timer & pricing)
+Vercel’s free hosting fits Next.js best. This Vite+Express app should be one Node service:
 
-| Setting | Default | Meaning |
-|--------|---------|---------|
-| Station hourly rate | set on **Stations** (e.g. ₨300) | Price per hour for that console |
-| Minimum billable hours | `1` | Never charge less than 1 × hourly rate |
-| Round up to full hours | **On** | 1h 05m → 2 hours |
-| Show live running price on timer | **Off** | Timer shows rate/min instead of ticking cost |
+1. Build: `npm run build` (builds client into `client/dist`, server uses it)
+2. Start: `NODE_ENV=production npm start` (Express serves API + static UI)
+3. Set env vars: `DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET`, `PORT`
 
-Example with PS5 at ₨300/hr, min 1 hour, round up on: 20 minutes → **₨300**; 65 minutes → **₨600**.
+Push to GitHub → connect Railway/Render → deploy.
 
-## CSV backup
+## Git push (updates live host)
 
-**Settings → Data backup & CSV**: download sessions, sample template, import CSV.  
-Also **Sessions → Download CSV**.
-
-## Deploy to Vercel
-
-Follow the full guide: **[DEPLOY.md](./DEPLOY.md)** (Neon/Prisma DB → GitHub → Vercel env vars → login).
-
-Summary: you need `DATABASE_URL`, `DIRECT_URL`, and `AUTH_SECRET` on Vercel. Logo uploads are stored in the database, so they work on Vercel.
-
-## Daily use
-
-1. Dashboard — sessions / optional timer  
-2. Stations — set **hourly rate** per station (e.g. 300)  
-3. Settings — pricing rules, branding, CSV, account  
-4. Sessions / Reports — history and totals  
+```powershell
+git add .
+git commit -m "Your message"
+git push
+```
