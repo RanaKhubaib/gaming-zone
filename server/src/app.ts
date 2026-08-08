@@ -6,11 +6,14 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import { api } from "./routes/api";
 
-const rootEnv = path.resolve(__dirname, "../../.env");
-if (fs.existsSync(rootEnv)) {
-  dotenv.config({ path: rootEnv });
-} else {
-  dotenv.config();
+// Only load local .env files. On Vercel, platform env vars are already set.
+if (!process.env.VERCEL) {
+  const rootEnv = path.resolve(__dirname, "../../.env");
+  if (fs.existsSync(rootEnv)) {
+    dotenv.config({ path: rootEnv, quiet: true });
+  } else {
+    dotenv.config({ quiet: true });
+  }
 }
 
 export function createApp() {
