@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Station {
+  id          Int      @id @default(autoincrement())
+  name        String
+  /// PS4 | PS5 | XBOX | PC | OTHER
+  consoleType String
+  hourlyRate  Float
+  /// AVAILABLE | OCCUPIED
+  status      String   @default("AVAILABLE")
+  createdAt   DateTime @default(now())
+  sessions    Session[]
+}
+
+model Game {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  sessions Session[]
+}
+
+model Session {
+  id               Int       @id @default(autoincrement())
+  stationId        Int
+  station          Station   @relation(fields: [stationId], references: [id])
+  customerName     String
+  customerPhone    String?
+  gameId           Int?
+  game             Game?     @relation(fields: [gameId], references: [id])
+  gameNameFreeText String?
+  startTime        DateTime
+  endTime          DateTime?
+  durationMinutes  Float?
+  price            Float?
+  /// Hours assigned for TIMER sessions (countdown length). Null for manual.
+  bookedHours      Float?
+  /// MANUAL | TIMER
+  entryMode        String    @default("MANUAL")
+  /// PAID | UNPAID
+  paymentStatus    String    @default("UNPAID")
+  notes            String?
+  createdAt        DateTime  @default(now())
+}
+
+model Subscriber {
+  id           Int      @id @default(autoincrement())
+  name         String
+  phone        String?
+  address      String?
+  paidAmount   Float
+  durationDays Int
+  startDate    DateTime @default(now())
+  endDate      DateTime
+  notes        String?
+  createdAt    DateTime @default(now())
+}
+
+model Settings {
+  id                       Int     @id @default(1)
+  liveTimerEnabled         Boolean @default(true)
+  showLiveRunningCost      Boolean @default(false)
+  minBillableHours         Float   @default(1)
+  roundUpToFullHours       Boolean @default(true)
+  shopName                 String  @default("Gaming Zone")
+  currencySymbol           String  @default("₨")
+  currencyCode             String  @default("PKR")
+  logoUrl                  String?
+  accentColor              String  @default("#0f766e")
+  availableColor           String  @default("#059669")
+  occupiedColor            String  @default("#dc2626")
+  unpaidColor              String  @default("#d97706")
+  paidColor                String  @default("#64748b")
+  defaultCustomerName      String  @default("Walk-in")
+  /// Days before subscription endDate to highlight as "near end" (red)
+  subscriptionWarningDays  Int     @default(7)
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  displayName  String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

@@ -1,0 +1,3 @@
+startTime,endTime,stationName,customerName,game,paymentStatus,entryMode,notes
+2026-08-07T14:00,2026-08-07T15:30,PS5 - Station 1,Ali,FIFA,PAID,MANUAL,
+2026-08-07T16:00,,PC - Station 1,Sara,Fortnite,UNPAID,MANUAL,Still playing
