@@ -2,6 +2,7 @@ import { prisma } from "./prisma";
 import { calculateSessionMetrics, getDisplayGameName } from "./session-calc";
 import { EntryMode, PaymentStatus } from "./constants";
 import { getAppSettings, settingsToPricingOptions } from "./settings";
+import type { Station } from "@prisma/client";
 
 export const SESSION_CSV_HEADERS = [
   "startTime",
@@ -127,8 +128,8 @@ export async function importSessionsFromCsv(text: string): Promise<ImportResult>
 
   const idx = (name: string) => header.indexOf(name);
   const stations = await prisma.station.findMany();
-  const stationByName = new Map(
-    stations.map((s) => [s.name.toLowerCase(), s])
+  const stationByName = new Map<string, Station>(
+    stations.map((s: Station) => [s.name.toLowerCase(), s])
   );
 
   let imported = 0;
