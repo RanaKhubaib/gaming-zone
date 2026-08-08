@@ -2,7 +2,14 @@ import { prisma } from "./prisma";
 import { calculateSessionMetrics, getDisplayGameName } from "./session-calc";
 import { EntryMode, PaymentStatus } from "./constants";
 import { getAppSettings, settingsToPricingOptions } from "./settings";
-import type { Station } from "@prisma/client";
+
+type StationRow = {
+  id: number;
+  name: string;
+  hourlyRate: number;
+  status: string;
+  consoleType: string;
+};
 
 export const SESSION_CSV_HEADERS = [
   "startTime",
@@ -127,9 +134,9 @@ export async function importSessionsFromCsv(text: string): Promise<ImportResult>
   }
 
   const idx = (name: string) => header.indexOf(name);
-  const stations = await prisma.station.findMany();
-  const stationByName = new Map<string, Station>(
-    stations.map((s: Station) => [s.name.toLowerCase(), s])
+  const stations = (await prisma.station.findMany()) as StationRow[];
+  const stationByName = new Map<string, StationRow>(
+    stations.map((s: StationRow) => [s.name.toLowerCase(), s])
   );
 
   let imported = 0;

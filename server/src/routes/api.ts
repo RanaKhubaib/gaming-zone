@@ -209,9 +209,13 @@ api.get("/dashboard", async (_req, res) => {
   res.json({
     stations,
     games,
-    todayRevenue: todaySessions.reduce((s, x) => s + (x.price ?? 0), 0),
+    todayRevenue: todaySessions.reduce(
+      (sum: number, x: { price: number | null }) => sum + (x.price ?? 0),
+      0
+    ),
     todayCount: todaySessions.length,
-    activeTimers: activeTimers.map((s) => ({
+    activeTimers: activeTimers.map(
+      (s: (typeof activeTimers)[number]) => ({
       id: s.id,
       stationId: s.stationId,
       customerName: s.customerName,
@@ -221,7 +225,8 @@ api.get("/dashboard", async (_req, res) => {
       gameNameFreeText: s.gameNameFreeText,
       notes: s.notes,
       game: s.game,
-    })),
+    })
+    ),
   });
 });
 
@@ -250,7 +255,7 @@ api.get("/sessions", async (_req, res) => {
     take: 500,
   });
   res.json(
-    sessions.map((s) => ({
+    sessions.map((s: (typeof sessions)[number]) => ({
       ...s,
       startTime: s.startTime.toISOString(),
       endTime: s.endTime?.toISOString() ?? null,
@@ -310,7 +315,7 @@ api.get("/subscribers", async (_req, res) => {
   const rows = await prisma.subscriber.findMany({ orderBy: { endDate: "asc" } });
   const today = startOfDay(new Date());
   const warningDays = settings.subscriptionWarningDays;
-  const subscribers = rows.map((s) => {
+  const subscribers = rows.map((s: (typeof rows)[number]) => {
     const daysLeft = differenceInCalendarDays(startOfDay(s.endDate), today);
     let status: "active" | "warning" | "expired" = "active";
     if (daysLeft < 0) status = "expired";
@@ -377,27 +382,41 @@ api.get("/reports", async (_req, res) => {
   });
 
   const sum = (list: typeof completed) => ({
-    revenue: list.reduce((a, s) => a + (s.price ?? 0), 0),
+    revenue: list.reduce(
+      (a: number, s: (typeof completed)[number]) => a + (s.price ?? 0),
+      0
+    ),
     sessions: list.length,
   });
 
   const todaySessions = completed.filter(
-    (s) => s.startTime >= todayStart && s.startTime <= todayEnd
+    (s: (typeof completed)[number]) =>
+      s.startTime >= todayStart && s.startTime <= todayEnd
   );
   const weekSessions = completed.filter(
-    (s) => s.startTime >= weekStart && s.startTime <= weekEnd
+    (s: (typeof completed)[number]) =>
+      s.startTime >= weekStart && s.startTime <= weekEnd
   );
   const monthSessions = completed.filter(
-    (s) => s.startTime >= monthStart && s.startTime <= monthEnd
+    (s: (typeof completed)[number]) =>
+      s.startTime >= monthStart && s.startTime <= monthEnd
   );
-  const last30 = completed.filter((s) => s.startTime >= last30Start);
+  const last30 = completed.filter(
+    (s: (typeof completed)[number]) => s.startTime >= last30Start
+  );
 
   const days = eachDayOfInterval({ start: last30Start, end: todayStart });
   const dailyRevenue = days.map((day) => {
     const key = format(day, "yyyy-MM-dd");
     const revenue = last30
-      .filter((s) => format(s.startTime, "yyyy-MM-dd") === key)
-      .reduce((a, s) => a + (s.price ?? 0), 0);
+      .filter(
+        (s: (typeof completed)[number]) =>
+          format(s.startTime, "yyyy-MM-dd") === key
+      )
+      .reduce(
+        (a: number, s: (typeof completed)[number]) => a + (s.price ?? 0),
+        0
+      );
     return { date: key, label: format(day, "dd MMM"), revenue: Math.round(revenue) };
   });
 
