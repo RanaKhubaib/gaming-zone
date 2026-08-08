@@ -3,7 +3,6 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import ws from "ws";
 
-// Vercel/serverless: prefer HTTP over WebSockets (avoids long WS connect hangs).
 neonConfig.webSocketConstructor = ws;
 neonConfig.poolQueryViaFetch = true;
 
@@ -29,6 +28,4 @@ function createPrisma() {
 }
 
 export const prisma = globalForPrisma.prisma ?? createPrisma();
-
-// Reuse across warm serverless invocations
 globalForPrisma.prisma = prisma;
