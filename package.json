@@ -24,9 +24,11 @@
     "cors": "^2.8.5",
     "date-fns": "^4.4.0",
     "dotenv": "^17.4.2",
+    "esbuild": "^0.28.1",
     "express": "^4.21.2",
     "jose": "^6.2.8",
     "multer": "^2.0.0",
+    "prisma": "5.22.0",
     "serverless-http": "^4.0.0"
   },
   "devDependencies": {
@@ -38,8 +40,6 @@
     "@vercel/node": "^5.9.7",
     "concurrently": "^9.2.0",
     "cross-env": "^7.0.3",
-    "esbuild": "^0.28.1",
-    "prisma": "^5.22.0",
     "tsx": "^4.23.11",
     "typescript": "^5.8.0"
   }
