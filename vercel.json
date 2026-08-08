@@ -5,6 +5,9 @@
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {
+    "api/health.js": {
+      "maxDuration": 10
+    },
     "api/[...path].js": {
       "maxDuration": 60,
       "memory": 1024,

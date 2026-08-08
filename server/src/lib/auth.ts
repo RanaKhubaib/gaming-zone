@@ -44,10 +44,12 @@ export async function createSessionToken(user: SessionUser): Promise<string> {
 }
 
 export function setSessionCookie(res: Response, token: string) {
+  const secure =
+    process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
   res.cookie(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure,
     path: "/",
     maxAge: SESSION_MAX_AGE_SECONDS * 1000,
   });
